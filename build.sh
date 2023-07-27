@@ -8,6 +8,10 @@ cp -r BossRush/libs/YAU.dll  ~/.config/r2modmanPlus-local/RiskOfRain2/profiles/B
 rm build/*
 
 cp BossRush/bin/Debug/netstandard2.0/*.dll build
+rm build/YAU.dll
+cp manifest.json build
+cp README.md build
+cp icon.png build
 cd build
 zip ../bossrush.zip *
 cd ..

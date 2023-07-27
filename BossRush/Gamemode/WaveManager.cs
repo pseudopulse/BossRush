@@ -518,6 +518,13 @@ namespace BossRush {
                         body.baseMoveSpeed = 12f; // hacky fix for dunestriders paralyzing with r2api, also makes them chase better
                     }
 
+                    DeathRewards rewards = body.GetComponent<DeathRewards>();
+
+                    if (rewards) {
+                        float num = 300 * ((WaveManager.instance.isPerfectedWave | WaveManager.instance.isVoidtouchedWave) ? 2f : 1f);
+                        rewards.goldReward = (uint)Mathf.Max(1f, num * 2f * Run.instance.compensatedDifficultyCoefficient);
+                    }
+
                     if (WaveManager.instance.isPerfectedWave) {
                         master.inventory.GiveItem(RoR2Content.Items.BoostHp, 5);
                         master.inventory.SetEquipmentIndex(RoR2Content.Equipment.AffixLunar.equipmentIndex);
@@ -614,8 +621,14 @@ namespace BossRush {
             bool isLunar = WaveManager.instance.wasPerfectWave;
             bool isVoidtouch = WaveManager.instance.wasVoidtouchedWave;
 
+            int c = 0;
+
             foreach (PlayerCharacterMasterController pcmc in pcmcs) {
                 CharacterMaster master = pcmc.master;
+
+                if (c >= 1 && BossRush.IsSharesuiteInstalled) {
+                    continue; // dont drop extras if sharesuite is active
+                }
 
                 if (isLunar) {
                     SpawnPickups(master, Run.instance.availableLunarItemDropList, WhiteRewards, ItemTier.Lunar, false);
@@ -637,6 +650,8 @@ namespace BossRush {
                 SpawnPickups(master, Run.instance.availableTier3DropList, RedRewards, ItemTier.Tier3, false);
                 SpawnPickups(master, Run.instance.availableBossDropList, BossRewards, ItemTier.Boss, false);
                 SpawnRandomEquip(master, isLunar ? Run.instance.availableLunarEquipmentDropList : Run.instance.availableEquipmentDropList);
+
+                c++;
             }
 
             void SpawnRandomEquip(CharacterMaster master, List<PickupIndex> pickups) {
@@ -652,6 +667,11 @@ namespace BossRush {
                 if (!master.GetBody()) {
                     return;
                 }
+
+                if (BossRush.IsBasedInstalled) {
+                    sort = false; // dont sort because wrb removes the healing tag entirely
+                }
+ 
                 float angle = 360f / amount;
                 Vector3 vector = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.up) * (Vector3.up * 40f + Vector3.forward * 5f);
                 Quaternion quaternion = Quaternion.AngleAxis(angle, Vector3.up);

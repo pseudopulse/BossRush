@@ -134,7 +134,7 @@ namespace BossRush.Tweaks {
                     bulletAttack.falloffModel = BulletAttack.FalloffModel.None;
                     bulletAttack.force = 0f;
                     bulletAttack.hitEffectPrefab = SpinBeamAttack.beamImpactEffectPrefab;
-                    bulletAttack.tracerEffectPrefab = Assets.GameObject.TracerBarrage;
+                    // bulletAttack.tracerEffectPrefab = Assets.GameObject.TracerBarrage;
                     bulletAttack.isCrit = false;
                     bulletAttack.HitEffectNormal = false;
                     

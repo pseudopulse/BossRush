@@ -33,6 +33,8 @@ namespace BossRush {
         public static bool IsRARPresent;
         public static bool IsForgorPresent;
         public static bool IsDireseekerPresent;
+        public static bool IsBasedInstalled;
+        public static bool IsSharesuiteInstalled;
 
         public void Awake() {
             // set logger
@@ -50,11 +52,8 @@ namespace BossRush {
             IsForgorPresent = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("PlasmaCore.ForgottenRelics");
             IsRARPresent = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("prodzpod.RecoveredAndReformed");
             IsDireseekerPresent = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.rob.Direseeker");
-
-            Debug.Log("Direseeker? : " + IsDireseekerPresent);
-            Debug.Log("GOTCE? : " + IsGotcePresent);
-            Debug.Log("RAR? : " + IsRARPresent);
-            Debug.Log("Forgor? : " + IsForgorPresent);
+            IsBasedInstalled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("BALLS.WellRoundedBalance");
+            IsSharesuiteInstalled = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.funkfrog_sipondo.sharesuite");
         }
     }
 }
