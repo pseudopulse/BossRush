@@ -31,6 +31,9 @@
     </ItemGroup>
   
     <ItemGroup>
+      <Reference Include="YAU">
+        <HintPath>libs/YAU.dll</HintPath>
+      </Reference>
       <Reference Include="Facepunch.Steamworks">
         <HintPath>libs\Facepunch.Steamworks.dll</HintPath>
         <Private>false</Private>
