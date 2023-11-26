@@ -13,10 +13,14 @@ Forgotten Relics - Brass Monolith
 Direseeker - Direseeker
 
 # Changelog
+## 1.1.1
+- added a wave for wayfarer if starstorm 2 is installed
 ## 1.1.0
 - fixed wrb incompatibility
 - no longer drops items for all players if sharesuite is installed
 - fixed bosses not dropping gold
+- added github link
+- made the central orb in the sky not flashbang you
 ## 1.0.0
 - release
 

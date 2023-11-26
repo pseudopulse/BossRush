@@ -75,6 +75,14 @@ namespace BossRush {
                 child.gameObject.layer = LayerIndex.world.intVal;
             }
 
+            foreach (LightIntensityCurve curve in powerRing.GetComponentsInChildren<LightIntensityCurve>()) {
+                curve.enabled = false;
+            }
+
+            foreach (Light light in powerRing.GetComponentsInChildren<Light>()) {
+                light.intensity = 3;
+            }
+
             // pillars
             Quaternion quat = Quaternion.Euler(270, 0, 0);
             GameObject.Instantiate(Assets.GameObject.MoonPillarHuge, new(100, 1, -1.3f), quat);
@@ -205,6 +213,24 @@ namespace BossRush {
 
         public void SetupWaves() {
             waves = new();
+
+            // wave 0 - wayfarer
+            if (BossRush.IsStarstormInstalled) {
+                waves.Add(
+                    new Wave(
+                        new List<WaveSpawn>() {
+                            new(MasterCatalog.FindMasterPrefab("LampBossMaster"), 2f, 5f, false)
+                        },
+                        3,
+                        2,
+                        0,
+                        0,
+                        2,
+                        2,
+                        Assets.MusicTrackDef.muBossfightDLC110
+                    )
+                );
+            }
 
             // wave 1 - solo titan
             waves.Add(

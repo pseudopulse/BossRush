@@ -1,7 +1,7 @@
 {
 	"name": "Boss_Rush",
-	"version_number": "1.0.0",
-	"website_url": "",
+	"version_number": "1.1.1",
+	"website_url": "https://github.com/pseudopulse/BossRush/",
 	"description": "Fight through a gauntlet of nearly all the bosses! Fully networked & supports modded bosses.",
 	"dependencies": [
 		"bbepis-BepInExPack-5.4.9",
