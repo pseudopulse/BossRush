@@ -49,6 +49,9 @@ namespace BossRush.Gamemode {
             waveManager.run = this;
             waveManager.Initialize();
             ObjectivePanelController.collectObjectiveSources += CollectObjectives;
+
+            Wave wave = new(new(), 3, 2, 0, 0, 2, 0, null);
+            wave.OnWaveCompleted();
         }
 
         public void CollectObjectives(CharacterMaster master, List<ObjectivePanelController.ObjectiveSourceDescriptor> objectiveSourcesList) {

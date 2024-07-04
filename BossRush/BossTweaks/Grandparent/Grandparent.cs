@@ -1,5 +1,6 @@
 using System;
 using BepInEx.Configuration;
+using BossRush.Gamemode;
 using EntityStates.VoidRaidCrab;
 using EntityStates.VoidRaidCrab.Weapon;
 
@@ -23,8 +24,8 @@ namespace BossRush.Tweaks {
 
         public GameObject OverrideSun(On.EntityStates.GrandParent.ChannelSun.orig_CreateSun orig, EntityStates.GrandParent.ChannelSun self, Vector3 sunPos) {
             Transform holder = GameObject.Find("HOLDER: Stage").transform;
-            Transform power = holder.Find("PowerCore");
-            if (!power) {
+            Transform power = holder?.Find("PowerCore");
+            if (Run.instance is not BossRushRun) {
                 return orig(self, sunPos); // we arent in boss rush
             }
             VoidSunController controller = power.GetComponent<VoidSunController>();
@@ -43,8 +44,8 @@ namespace BossRush.Tweaks {
 
         public void OnChannelExit(On.EntityStates.GrandParent.ChannelSunEnd.orig_OnEnter orig, EntityStates.GrandParent.ChannelSunEnd self) {
             Transform holder = GameObject.Find("HOLDER: Stage").transform;
-            Transform power = holder.Find("PowerCore");
-            if (!power) {
+            Transform power = holder?.Find("PowerCore");
+            if (Run.instance is not BossRushRun) {
                 orig(self); 
                 return; // we arent in boss rush
             }

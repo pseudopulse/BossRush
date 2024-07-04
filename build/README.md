@@ -12,7 +12,24 @@ Forgotten Relics - Brass Monolith
 
 Direseeker - Direseeker
 
+Starstorm 2 - Wayfarers
+
 # Changelog
+## 1.2.0
+- moved wayfarer to be between solus trio and aurelionite, and made it spawn a second copy
+- nerfed item gain across the board for the modded bosses
+- removed 1 red item and reduced white gain
+- reduced level gain
+- reduced certain boss hp levels
+- gave all bosses adaptive armor
+- made players start with some item choices
+- fixed certain bosses being unable to pathfind due to the increased scale
+- fixed the mod breaking with the devotion update
+
+## 1.1.3
+- reverted 1.1.3
+## 1.1.2
+- updated BepInIncompatibility
 ## 1.1.1
 - added a wave for wayfarer if starstorm 2 is installed
 ## 1.1.0
