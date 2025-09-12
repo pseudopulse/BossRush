@@ -14,7 +14,30 @@ Direseeker - Direseeker
 
 Starstorm 2 - Wayfarers
 
+Enemies Returns - Colossus (replaces wave 1 titan 50% of the time), Ifrit
+
+Regigigas - Regigias (replaces aurelionite, has a funny special spawn sequence that disables slow start)
+
+Tyranitar - Tyranitar (replaces grovetender 50% of the time)
+
 # Changelog
+## 1.3.3
+- fixed the mode softlocking at wave 2
+
+## 1.3.2
+- lowered the scale of some bosses
+- fixed certain waves having no music
+- fixed boss rush inheriting the ramps added by wolfo's simulacrum additions
+
+## 1.3.1
+- obligatory readme update
+
+## 1.3.0
+- updated for SOTS
+- reduced the total wave count with mods (certain modded bosses have a chance to replace vanilla ones or each other)
+- added support for more mods
+- tweaked bosses to have their max targeting range increased by their scale (have fun!)
+
 ## 1.2.0
 - moved wayfarer to be between solus trio and aurelionite, and made it spawn a second copy
 - nerfed item gain across the board for the modded bosses

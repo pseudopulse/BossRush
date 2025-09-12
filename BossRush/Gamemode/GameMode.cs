@@ -17,7 +17,7 @@ namespace BossRush.Gamemode {
         }
         public static void Create() {
             bossRushPrefab = RuntimePrefabManager.CreatePrefab(new("bossRushRun"), "bossRushRun");
-            GameObject classic = Assets.GameObject.ClassicRun;
+            GameObject classic = Paths.GameObject.ClassicRun;
 
             BossRushRun run = bossRushPrefab.AddComponent<BossRushRun>();
             run.lobbyBackgroundPrefab = classic.GetComponent<Run>().lobbyBackgroundPrefab;
@@ -40,13 +40,13 @@ namespace BossRush.Gamemode {
 
             BossRushSpeed = ScriptableObject.CreateInstance<BuffDef>();
             BossRushSpeed.canStack = true;
-            BossRushSpeed.iconSprite = Assets.BuffDef.bdCloakSpeed.iconSprite;
+            BossRushSpeed.iconSprite = Paths.BuffDef.bdCloakSpeed.iconSprite;
             BossRushSpeed.name = "Blessing of the Void";
             BossRushSpeed.buffColor = Color.magenta;
 
-            PerfectedWave = RuntimePrefabManager.CreatePrefab(Assets.GameObject.ShrineBoss, "PerfectedWave");
-            VoidtouchWave = RuntimePrefabManager.CreatePrefab(Assets.GameObject.ShrineBoss, "VoidtouchWave");
-            ProgressionSlab = RuntimePrefabManager.CreatePrefab(Assets.GameObject.LunarRecycler, "SkipWave");
+            PerfectedWave = RuntimePrefabManager.CreatePrefab(Paths.GameObject.ShrineBoss, "PerfectedWave");
+            VoidtouchWave = RuntimePrefabManager.CreatePrefab(Paths.GameObject.ShrineBoss, "VoidtouchWave");
+            ProgressionSlab = RuntimePrefabManager.CreatePrefab(Paths.GameObject.LunarRecycler, "SkipWave");
 
             Debug.Log("PerfectedWave ID pre-reset: " + PerfectedWave.GetComponent<NetworkIdentity>().assetId);
 
@@ -63,10 +63,10 @@ namespace BossRush.Gamemode {
 
             foreach (MeshRenderer renderer in VoidtouchWave.GetComponentsInChildren<MeshRenderer>()) {
                 if (renderer.gameObject.name == "Symbol") {
-                    renderer.material = Assets.Material.matDeepVoidPortalCenter;
+                    renderer.material = Paths.Material.matDeepVoidPortalCenter;
                 }
                 else {
-                    renderer.material = Assets.Material.matDeepVoidPortalOpaque;
+                    renderer.material = Paths.Material.matDeepVoidPortalOpaque;
                 }
             }
 
@@ -80,10 +80,10 @@ namespace BossRush.Gamemode {
 
             foreach (MeshRenderer renderer in PerfectedWave.GetComponentsInChildren<MeshRenderer>()) {
                 if (renderer.gameObject.name == "Symbol") {
-                    renderer.material = Assets.Material.matLunarGolemChargeGlow;
+                    renderer.material = Paths.Material.matLunarGolemChargeGlow;
                 }
                 else {
-                    renderer.material = Assets.Material.matLunarGolem;
+                    renderer.material = Paths.Material.matLunarGolem;
                 }
             }
 

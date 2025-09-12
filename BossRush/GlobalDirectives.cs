@@ -29,6 +29,6 @@ global using YAU.Language;
 global using YAU.Components;
 global using YAU.Networking;
 global using YAU.AddressableUtils;
-global using Assets = YAU.AddressableUtils.Assets;
+global using Paths = BossRush.Utils.Assets;
 global using Random = UnityEngine.Random;
 global using SearchableAttribute = HG.Reflection.SearchableAttribute;

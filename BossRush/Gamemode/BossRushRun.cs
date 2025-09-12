@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using RoR2.UI;
 
 namespace BossRush.Gamemode {
@@ -24,7 +25,7 @@ namespace BossRush.Gamemode {
         public override void Start()
         {
             #pragma warning disable
-            startingScenes = new SceneDef[] { Assets.SceneDef.itmoon };
+            startingScenes = new SceneDef[] { Paths.SceneDef.itmoon };
             startingSceneGroup = null;
             #pragma warning enable
             base.Start();
@@ -80,6 +81,33 @@ namespace BossRush.Gamemode {
         public override void AdvanceStage(SceneDef nextScene)
         {
             base.AdvanceStage(nextScene);
+        }
+
+        public void InvokeDelayed(float delay = 0f) {
+            StartCoroutine(InvokeSpawns(delay));
+        }
+
+        public void InvokeRegigigas() {
+            StartCoroutine(HandleRegigigas());
+        }
+
+        public IEnumerator HandleRegigigas() {
+            yield return new WaitForSeconds(0.5f);
+            Chat.AddMessage("<style=cStack>[The Void's Neutralizing Gas]</style>");
+            Chat.AddMessage("<style=cWorldEvent>Neutralizing gas filled the area!</style>");
+            yield return new WaitForSeconds(1f);
+            Chat.AddMessage("<style=cLunarObjective>Regigigas</style>: ...my <style=cHumanObjective><b>FAVORITE.</b></style>");
+            StartCoroutine(InvokeSpawns(0.016f));
+        }
+
+        public IEnumerator InvokeSpawns(float delay) {
+            yield return new WaitForSeconds(delay);
+            foreach (WaveSpawn spawn in waveManager.currentWave.WaveSpawns) {
+                if (NetworkServer.active) {
+                    yield return new WaitForEndOfFrame();
+                    spawn.DoSpawn();
+                }
+            }
         }
 
         public override void RecalculateDifficultyCoefficentInternal()

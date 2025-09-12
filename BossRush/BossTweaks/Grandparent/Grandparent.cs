@@ -7,7 +7,7 @@ using EntityStates.VoidRaidCrab.Weapon;
 namespace BossRush.Tweaks {
     public class Grandparent : TweakBase
     {
-        public override GameObject Body => Assets.GameObject.GrandParentBody;
+        public override GameObject Body => Paths.GameObject.GrandParentBody;
 
         public override void ProcessTweaks(CharacterBody body, SkillLocator locator)
         {
@@ -66,7 +66,7 @@ namespace BossRush.Tweaks {
             private float yDir = 20f;
 
             public void SpawnVFX() {
-                beamVfxInstance = Instantiate(Assets.GameObject.VoidRaidCrabSpinBeamVFX);
+                beamVfxInstance = Instantiate(Paths.GameObject.VoidRaidCrabSpinBeamVFX);
                 beamVfxInstance.transform.SetParent(base.transform);
                 beamVfxInstance.transform.localScale += new Vector3(0.3f, 0.3f, 0.3f);
             }
@@ -135,7 +135,7 @@ namespace BossRush.Tweaks {
                     bulletAttack.falloffModel = BulletAttack.FalloffModel.None;
                     bulletAttack.force = 0f;
                     bulletAttack.hitEffectPrefab = SpinBeamAttack.beamImpactEffectPrefab;
-                    // bulletAttack.tracerEffectPrefab = Assets.GameObject.TracerBarrage;
+                    // bulletAttack.tracerEffectPrefab = Paths.GameObject.TracerBarrage;
                     bulletAttack.isCrit = false;
                     bulletAttack.HitEffectNormal = false;
                     

@@ -4,6 +4,9 @@ using BossRush.Gamemode;
 using UnityEngine.UI;
 using RoR2.UI;
 using RoR2.Networking;
+using RoR2.EntitlementManagement;
+using R2API.Utils;
+using RoR2.WwiseUtils;
 
 #pragma warning disable // the obsolete errors on pickupindex are annoying
 
@@ -36,6 +39,7 @@ namespace BossRush {
             On.RoR2.CharacterMaster.OnBodyDeath += OnDeath;
             On.RoR2.MusicController.PickCurrentTrack += PlayWaveTrack;
             On.RoR2.CharacterAI.AISkillDriver.OnEnable += ForceIgnoreNodegraph;
+            On.RoR2.MusicController.UpdateTeleporterParameters += FixTPMusic;
 
             if (!StackingHealthBarPrefab) {
                 InitHealthBarPrefab();
@@ -66,6 +70,22 @@ namespace BossRush {
             On.RoR2.CharacterMaster.OnBodyDeath -= OnDeath;
             On.RoR2.MusicController.PickCurrentTrack -= PlayWaveTrack;
             On.RoR2.CharacterAI.AISkillDriver.OnEnable -= ForceIgnoreNodegraph;
+            On.RoR2.MusicController.UpdateTeleporterParameters -= FixTPMusic;
+        }
+
+        private void FixTPMusic(On.RoR2.MusicController.orig_UpdateTeleporterParameters orig, MusicController self, TeleporterInteraction teleporter, Transform cameraTransform, CharacterBody targetBody)
+        {
+            self.stBossStatus.valueId = CommonWwiseIds.alive;
+            self.rtpcTeleporterPlayerStatus.value = 1f;
+            self.rtpcTeleporterProximityValue.value = 0f;
+
+            Vector3 vector = Vector3.zero - cameraTransform.position;
+            Vector3 forward = cameraTransform.forward;
+
+            float ang = Vector2.SignedAngle(new Vector2(vector.x, vector.z), new Vector2(forward.x, forward.z));
+            if (ang < 0) ang += 360f;
+
+            self.rtpcTeleporterDirectionValue.value = ang;
         }
 
         public void FixScene() {
@@ -93,10 +113,10 @@ namespace BossRush {
 
             // pillars
             Quaternion quat = Quaternion.Euler(270, 0, 0);
-            GameObject.Instantiate(Assets.GameObject.MoonPillarHuge, new(100, 1, -1.3f), quat);
-            GameObject.Instantiate(Assets.GameObject.MoonPillarHuge, new(-100, 1, -1.3f), quat);
-            GameObject.Instantiate(Assets.GameObject.MoonPillarHuge, new(-1.3f, 1, 100), quat);
-            GameObject.Instantiate(Assets.GameObject.MoonPillarHuge, new(-1.3f, 1, -100), quat);
+            GameObject.Instantiate(Paths.GameObject.MoonPillarHuge, new(100, 1, -1.3f), quat);
+            GameObject.Instantiate(Paths.GameObject.MoonPillarHuge, new(-100, 1, -1.3f), quat);
+            GameObject.Instantiate(Paths.GameObject.MoonPillarHuge, new(-1.3f, 1, 100), quat);
+            GameObject.Instantiate(Paths.GameObject.MoonPillarHuge, new(-1.3f, 1, -100), quat);
 
             GameObject powerClone = GameObject.Instantiate(power.gameObject, new(100, 70, -1.3f), Quaternion.identity);
             powerClone.transform.localScale = new(0.2f, 0.2f, 0.2f);
@@ -119,10 +139,18 @@ namespace BossRush {
                 NetworkServer.Spawn(shrine1);
                 NetworkServer.Spawn(shrine2);
             }
+
+            if (BossRush.IsSimulAdditionsInstalled) {
+                Transform root = GameObject.Find("HOLDER: Stage").transform;
+                root.Find("MoonArenaColumn, Huge Alt (4)").gameObject.SetActive(false);
+                root.Find("MoonArenaColumn, Huge Alt (5)").gameObject.SetActive(false);
+                root.Find("MoonArenaColumn, Huge Alt (6)").gameObject.SetActive(false);
+                root.Find("MoonArenaColumn, Huge Alt (7)").gameObject.SetActive(false);
+            }
         }
 
         public static void InitHealthBarPrefab() {
-            GameObject HUD = Assets.GameObject.HUDSimple;
+            GameObject HUD = Paths.GameObject.HUDSimple;
             GameObject HealthBar = HUD.transform.Find("MainContainer").Find("MainUIArea").Find("SpringCanvas").Find("TopCenterCluster").Find("BossHealthBarRoot").Find("Container").gameObject;
             StackingHealthBarPrefab = RuntimePrefabManager.CreatePrefab(HealthBar, "StackableBossBar");
 
@@ -143,6 +171,7 @@ namespace BossRush {
             bar.Name = name;
             bar.Subtitle = sub;
             bar.DelayFillRect = delayFill;
+            bar.HP.gameObject.SetActive(true);
         }
 
         public class BossRushObjective : ObjectivePanelController.ObjectiveTracker {
@@ -189,11 +218,7 @@ namespace BossRush {
                         return;
                     }
 
-                    foreach (WaveSpawn spawn in currentWave.WaveSpawns) {
-                        if (NetworkServer.active) {
-                            spawn.DoSpawn();
-                        }
-                    }
+                    run.InvokeDelayed(3f);
 
                     foreach (PlayerCharacterMasterController pcmc in PlayerCharacterMasterController._instancesReadOnly) {
                         if (pcmc.master && pcmc.master.GetBody()) {
@@ -226,7 +251,7 @@ namespace BossRush {
             waves.Add(
                 new Wave(
                     new List<WaveSpawn>() {
-                        new(Assets.GameObject.TitanMaster, 2f, 1.2f, false),
+                        new(Paths.GameObject.TitanMaster, 2f, 1.2f, false),
                     },
                     3,
                     2,
@@ -234,16 +259,20 @@ namespace BossRush {
                     0,
                     5,
                     4,
-                    Assets.MusicTrackDef.muSong05
+                    Paths.MusicTrackDef.muBossfightDLC112
                 )
             );
+
+            if (BossRush.IsEnemiesReturnsInstalled && Util.CheckRoll(50f)) {
+                waves[0].WaveSpawns[0].MasterPrefab = MasterCatalog.FindMasterPrefab("ColossusMaster");
+            }
 
             // wave 2 - vagrant and queen
             waves.Add(
                 new Wave(
                     new List<WaveSpawn>() {
-                        new(Assets.GameObject.BeetleQueenMaster, 1f, 1f, false),
-                        new(Assets.GameObject.VagrantMaster, 1f, 1f, true),
+                        new(Paths.GameObject.BeetleQueenMaster, 1f, 1f, false),
+                        new(Paths.GameObject.VagrantMaster, 1f, 1f, true),
                     },
                     3,
                     2,
@@ -251,7 +280,7 @@ namespace BossRush {
                     0,
                     3,
                     4,
-                    Assets.MusicTrackDef.muSong16
+                    Paths.MusicTrackDef.muSongLakesHabitatBoss
                 )
             );
 
@@ -259,7 +288,7 @@ namespace BossRush {
             waves.Add(
                 new Wave(
                     new List<WaveSpawn>() {
-                        new(Assets.GameObject.ClayBossMaster, 2f, 2f, false),
+                        new(Paths.GameObject.ClayBossMaster, 2f, 2f, false),
                     },
                     2,
                     1,
@@ -267,15 +296,16 @@ namespace BossRush {
                     0,
                     3,
                     2,
-                    Assets.MusicTrackDef.muBossfightDLC112
+                    Paths.MusicTrackDef.muBossfightDLC112
                 )
             );
 
-            if (BossRush.IsRARPresent) {
+            if (BossRush.IsRARPresent && Util.CheckRoll(50f)) {
+                waves.RemoveAt(waves.Count - 1);
                 waves.Add(new Wave(
                     new List<WaveSpawn>() {
-                        new(Assets.GameObject.MegaConstructMaster, 1f, 2f, true),
-                        new(Assets.GameObject.MajorConstructMaster, 1f, 2f, false)
+                        new(Paths.GameObject.MegaConstructMaster, 1f, 2f, true),
+                        new(Paths.GameObject.MajorConstructMaster, 1f, 2f, false)
                     },
                     3,
                     2,
@@ -283,7 +313,7 @@ namespace BossRush {
                     0,
                     3,
                     2,
-                    Assets.MusicTrackDef.muBossfightDLC110
+                    Paths.MusicTrackDef.muBossfightDLC112
                 ));
             }
 
@@ -291,8 +321,8 @@ namespace BossRush {
             waves.Add(
                 new Wave(
                     new List<WaveSpawn>() {
-                        new(Assets.GameObject.GravekeeperMaster, 1.5f, 1.4f, false),
-                        new(Assets.GameObject.ImpBossMaster, 1.5f, 1.4f, false),
+                        new(Paths.GameObject.GravekeeperMaster, 1.5f, 1.4f, false),
+                        new(Paths.GameObject.ImpBossMaster, 1.5f, 1.4f, false),
                     },
                     2,
                     2,
@@ -300,11 +330,32 @@ namespace BossRush {
                     0,
                     3,
                     3,
-                    Assets.MusicTrackDef.muBossfightDLC110
+                    Paths.MusicTrackDef.muBossfightDLC110
                 )
             );
 
-            if (BossRush.IsDireseekerPresent) {
+            if (BossRush.IsTyranitarInstalled && Util.CheckRoll(50f)) {
+                waves[waves.Count - 1].WaveSpawns[0].MasterPrefab = MasterCatalog.FindMasterPrefab("TyranitarMaster");
+            }
+
+            if (BossRush.IsEnemiesReturnsInstalled && Util.CheckRoll(25)) {
+                waves.Add(
+                    new Wave(
+                        new List<WaveSpawn>() {
+                            new(MasterCatalog.FindMasterPrefab("IfritMasterMaster"), 2f, 2f, false),
+                        },
+                        1,
+                        1,
+                        0,
+                        0,
+                        1,
+                        2,
+                        Paths.MusicTrackDef.muBossfightDLC112
+                    )
+                );
+            }
+
+            if (BossRush.IsDireseekerPresent && Util.CheckRoll(25f)) {
                 waves.Add(
                     new Wave(
                         new List<WaveSpawn>() {
@@ -316,7 +367,7 @@ namespace BossRush {
                         0,
                         1,
                         2,
-                        Assets.MusicTrackDef.muBossfightDLC112
+                        Paths.MusicTrackDef.muBossfightDLC112
                     )
                 );
             }
@@ -325,7 +376,7 @@ namespace BossRush {
             waves.Add(
                 new Wave(
                     new List<WaveSpawn>() {
-                        new(Assets.GameObject.GrandparentMaster, 3f, 3f, false) {
+                        new(Paths.GameObject.GrandparentMaster, 2f, 3f, false) {
                             noRandomPos = true
                         },
                     },
@@ -335,7 +386,7 @@ namespace BossRush {
                     0,
                     2,
                     5,
-                    Assets.MusicTrackDef.muSong22
+                    Paths.MusicTrackDef.muSong22
                 )
             );
 
@@ -343,8 +394,8 @@ namespace BossRush {
             waves.Add(
                 new Wave(
                     new List<WaveSpawn>() {
-                        new(Assets.GameObject.MagmaWormMaster, 1f, 3f, false),
-                        new(Assets.GameObject.ElectricWormMaster, 1f, 1f, false),
+                        new(Paths.GameObject.MagmaWormMaster, 1f, 3f, false),
+                        new(Paths.GameObject.ElectricWormMaster, 1f, 1f, false),
                     },
                     2,
                     2,
@@ -352,7 +403,7 @@ namespace BossRush {
                     1,
                     2,
                     3,
-                    Assets.MusicTrackDef.muSong23
+                    Paths.MusicTrackDef.muSong23
                 )
             );
 
@@ -360,9 +411,9 @@ namespace BossRush {
             waves.Add(
                 new Wave(
                     new List<WaveSpawn>() {
-                        new(Assets.GameObject.RoboBallBossMaster, 0.6f, 2f, true),
-                        new(Assets.GameObject.SuperRoboBallBossMaster, 1.5f, 5f, true),
-                        new(Assets.GameObject.RoboBallBossMaster, 0.6f, 2f, true),
+                        new(Paths.GameObject.RoboBallBossMaster, 0.6f, 2f, true),
+                        new(Paths.GameObject.SuperRoboBallBossMaster, 1.5f, 5f, true),
+                        new(Paths.GameObject.RoboBallBossMaster, 0.6f, 2f, true),
                     },
                     1,
                     3,
@@ -370,7 +421,7 @@ namespace BossRush {
                     0,
                     2,
                     3,
-                    Assets.MusicTrackDef.muSong05
+                    Paths.MusicTrackDef.muSong05
                 )
             );
 
@@ -388,18 +439,19 @@ namespace BossRush {
                         0,
                         2,
                         2,
-                        Assets.MusicTrackDef.muSong22
+                        Paths.MusicTrackDef.muSong22
                     )
                 );
             }
 
             // wave 7.5 - wayfarer
-            if (BossRush.IsStarstormInstalled) {
+            if (BossRush.IsStarstormInstalled && Util.CheckRoll(50f)) {
+                waves.RemoveAt(waves.Count - 1);
                 waves.Add(
                     new Wave(
                         new List<WaveSpawn>() {
-                            new(MasterCatalog.FindMasterPrefab("LampBossMaster"), 3f, 4f, false),
-                            new(MasterCatalog.FindMasterPrefab("LampBossMaster"), 3f, 4f, false)
+                            new(MasterCatalog.FindMasterPrefab("LampBossMaster"), 2.5f, 4f, false),
+                            new(MasterCatalog.FindMasterPrefab("LampBossMaster"), 2.5f, 4f, false)
                         },
                         3,
                         2,
@@ -407,7 +459,7 @@ namespace BossRush {
                         0,
                         1,
                         2,
-                        Assets.MusicTrackDef.muBossfightDLC110
+                        Paths.MusicTrackDef.muBossfightDLC110
                     )
                 );
             }
@@ -416,7 +468,7 @@ namespace BossRush {
             waves.Add(
                 new Wave(
                     new List<WaveSpawn>() {
-                        new(Assets.GameObject.TitanGoldMaster, 5f, 5f, false),
+                        new(Paths.GameObject.TitanGoldMaster, 5f, 5f, false),
                     },
                     2,
                     2,
@@ -424,9 +476,29 @@ namespace BossRush {
                     0,
                     0,
                     3,
-                    Assets.MusicTrackDef.muBossfightDLC110
+                    Paths.MusicTrackDef.muSong05
                 )
             );
+
+            if (BossRush.IsRegigigasInstalled) {
+                waves.RemoveAt(waves.Count - 1);
+                waves.Add(
+                    new Wave(
+                        new List<WaveSpawn>() {
+                            new(MasterCatalog.FindMasterPrefab("RegigigasMaster"), 3f, 3f, false),
+                        },
+                        0,
+                        0,
+                        2,
+                        1,
+                        0,
+                        5,
+                        Paths.MusicTrackDef.muBossfightDLC112
+                    ) { IsRegigigas = true}
+                );
+
+                Debug.Log("Regi master: " + waves[waves.Count - 1].WaveSpawns[0].MasterPrefab);
+            }
 
             if (BossRush.IsGotcePresent) {
                 waves.Add(
@@ -440,7 +512,7 @@ namespace BossRush {
                         0,
                         1,
                         2,
-                        Assets.MusicTrackDef.muBossfightDLC112
+                        Paths.MusicTrackDef.muSongLakesHabitatBoss
                     )
                 );
             }
@@ -449,7 +521,7 @@ namespace BossRush {
             waves.Add(
                 new Wave(
                     new List<WaveSpawn>() {
-                        new(Assets.GameObject.BrotherMaster, 1f, 5f, false),
+                        new(Paths.GameObject.BrotherMaster, 1f, 5f, false),
                     },
                     2,
                     2,
@@ -457,7 +529,7 @@ namespace BossRush {
                     0,
                     2,
                     4,
-                    Assets.MusicTrackDef.muSong25
+                    Paths.MusicTrackDef.muSong25
                 )
             );
         }
@@ -465,9 +537,18 @@ namespace BossRush {
             isInWaveTransition = false;
             currentWave = waves[waveIndex];
             canInteractWithShrines = false;
-            foreach (WaveSpawn spawn in currentWave.WaveSpawns) {
-                if (NetworkServer.active) {
-                    spawn.DoSpawn();
+            
+            Debug.Log("sigma");
+            Debug.Log(currentWave.Music);
+            
+            if (currentWave.IsRegigigas) {
+                run.InvokeRegigigas();
+            }
+            else {
+                foreach (WaveSpawn spawn in currentWave.WaveSpawns) {
+                    if (NetworkServer.active) {
+                        spawn.DoSpawn();
+                    }
                 }
             }
 
@@ -481,14 +562,14 @@ namespace BossRush {
 
             GenericPickupController[] pickups = GameObject.FindObjectsOfType<GenericPickupController>().Where(x => EquipmentCatalog.GetEquipmentDef(x.pickupIndex.equipmentIndex)).ToArray();
             for (int i = 0; i < pickups.Length; i++) {
-                EffectManager.SpawnEffect(Assets.GameObject.ExplosionLunarSun, new EffectData {
+                EffectManager.SpawnEffect(Paths.GameObject.ExplosionLunarSun, new EffectData {
                     scale = 2f,
                     origin = pickups[i].transform.position
                 }, false);
                 GameObject.Destroy(pickups[i].gameObject);
             }
 
-            if (currentWave.Music == Assets.MusicTrackDef.muSong25) {
+            if (waveIndex >= waves.Count) {
                 AkSoundEngine.SetState("bossPhase", "phase1");
             }
         }
@@ -538,6 +619,10 @@ namespace BossRush {
                     CharacterMaster master = res.spawnedInstance.GetComponent<CharacterMaster>();
                     master.SpawnBodyHere();
 
+                    foreach (AISkillDriver driver in master.GetComponents<AISkillDriver>()) {
+                        driver.maxDistance *= Scale;
+                    }
+
                     Health *= Run.instance.livingPlayerCount;
                     if (Run.instance.livingPlayerCount > 1) {
                         Health += Run.instance.livingPlayerCount * 0.5f;
@@ -552,6 +637,15 @@ namespace BossRush {
 
                     if (body.baseMoveSpeed == 9f) {
                         body.baseMoveSpeed = 12f; // hacky fix for dunestriders paralyzing with r2api, also makes them chase better
+                    }
+
+                    if (wave.IsRegigigas) {
+                        foreach (MonoBehaviour comp in body.GetComponents<MonoBehaviour>()) {
+                            Debug.Log(comp.GetType().FullName.Contains("SlowStart"));
+                            if (comp.GetType().FullName.Contains("SlowStart")) {
+                                comp.enabled = false;
+                            }
+                        }
                     }
 
                     DeathRewards rewards = body.GetComponent<DeathRewards>();
@@ -622,6 +716,7 @@ namespace BossRush {
         public int LevelRewards;
         public int BuffStacks;
         public MusicTrackDef Music;
+        public bool IsRegigigas = false;
 
         public Wave(List<WaveSpawn> spawns, int whites, int greens, int reds, int yellows, int levels, int buffStacks, MusicTrackDef music) {
             WaveSpawns = spawns;
@@ -720,7 +815,7 @@ namespace BossRush {
             void SpawnPotential(Vector3 pos, Vector3 vel, ItemTier tier, List<PickupIndex> drops, bool sort) {
                 GenericPickupController.CreatePickupInfo info = new();
                 info.position = pos;
-                info.prefabOverride = Assets.GameObject.OptionPickup;
+                info.prefabOverride = Paths.GameObject.OptionPickup;
                 info.rotation = Quaternion.identity;
                 info.pickupIndex = PickupCatalog.FindPickupIndex(tier);
 
@@ -741,7 +836,7 @@ namespace BossRush {
                     available = true
                 };
 
-                PickupDropletController.CreatePickupDroplet(info, vel);
+                PickupDropletController.CreatePickupDroplet(info, info.position, vel);
             }
 
             PickupIndex GetDropFrom(List<PickupIndex> drops, ItemTag reqtag, List<PickupIndex> exclude) {
@@ -765,6 +860,8 @@ namespace BossRush {
         public void Start() {
             body = GetComponent<CharacterBody>();
             Transform container = GameObject.Find("HUDSimple(Clone)").transform.Find("MainContainer").Find("MainUIArea").Find("SpringCanvas").Find("TopCenterCluster").Find("BossHealthBarRoot");
+            container.GetComponent<VerticalLayoutGroup>().enabled = true;
+            container.GetComponent<VerticalLayoutGroup>().spacing = 90;
             GameObject barObj = GameObject.Instantiate(WaveManager.StackingHealthBarPrefab, container);
             StackableHealthBar bar = barObj.GetComponent<StackableHealthBar>();
             bar.target = body;
@@ -774,6 +871,8 @@ namespace BossRush {
 
         public void HandleScale() {
             body.modelLocator.modelTransform.localScale *= scale;
+
+            body.modelLocator.modelTransform.GetComponentsInChildren<HitBox>().ForEachTry(x => x.transform.localScale *= scale);
 
             /*KinematicCharacterController.KinematicCharacterMotor motor = body.GetComponent<KinematicCharacterController.KinematicCharacterMotor>();
             CapsuleCollider col = body.GetComponent<CapsuleCollider>();
